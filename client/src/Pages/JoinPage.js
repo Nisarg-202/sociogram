@@ -32,7 +32,7 @@ function JoinPage(props) {
   }
 
   useEffect(function () {
-    socket = io('https://immense-woodland-13360.herokuapp.com');
+    socket = io(process.env.REACT_APP_SERVER_URL);
     return function () {
       socket.disconnect();
     };

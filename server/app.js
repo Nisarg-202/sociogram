@@ -1,21 +1,23 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const fileUpload = require('express-fileupload');
-const path = require('path');
-const cloudinary = require('cloudinary').v2;
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const fileUpload = require("express-fileupload");
+const path = require("path");
+const cloudinary = require("cloudinary").v2;
 
-const middleware = require('./middleware/middleware');
-const Message = require('./Schema/MessageSchema');
+const middleware = require("./middleware/middleware");
+const Message = require("./Schema/MessageSchema");
 
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
+const http = require("http").createServer(app);
+const { Server } = require("socket.io");
+
+const io = new Server(http, {
   cors: {
-    origin: 'https://sociogram-f2859.web.app',
+    origin: process.env.CLIENT_URL, // https://sociogram-f2859.web.app
   },
 });
 
@@ -39,13 +41,13 @@ mongoose.connect(
   }
 );
 
-app.get('/testing', function (req, res) {
-  res.send('This is a testing route.');
+app.get("/testing", function (req, res) {
+  res.send("This is a testing route.");
 });
 
-io.on('connection', function (socket) {
-  console.log('user connected!');
-  socket.on('sendMessage', async function ({from, to, message}) {
+io.on("connection", function (socket) {
+  console.log("user connected!");
+  socket.on("sendMessage", async function ({ from, to, message }) {
     const myMessage = new Message({
       from,
       to,
@@ -54,27 +56,27 @@ io.on('connection', function (socket) {
     });
     await myMessage.save(async function (err) {
       if (err) {
-        io.sockets.emit('broadcast', {success: false});
+        io.sockets.emit("broadcast", { success: false });
       } else {
         await Message.find(function (err, found) {
           if (err) {
-            io.sockets.emit('broadcast', {success: false});
+            io.sockets.emit("broadcast", { success: false });
           } else {
             if (found) {
-              io.sockets.emit('broadcast', {success: true, messages: found});
+              io.sockets.emit("broadcast", { success: true, messages: found });
             } else {
-              io.sockets.emit('broadcast', {success: true, messages: []});
+              io.sockets.emit("broadcast", { success: true, messages: [] });
             }
           }
         });
       }
     });
   });
-  socket.on('disconnect', function () {
-    console.log('user disconnected');
+  socket.on("disconnect", function () {
+    console.log("user disconnected");
   });
 });
 
 http.listen(process.env.PORT || 5000, function () {
-  console.log('Server is running on port 5000.');
+  console.log("Server is running on port 5000.");
 });

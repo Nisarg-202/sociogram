@@ -1,14 +1,12 @@
-import axios from 'axios';
+import axios from "axios";
 
 const a = axios.create({
-  baseURL: 'https://immense-woodland-13360.herokuapp.com',
+  baseURL: process.env.REACT_APP_SERVER_URL,
 });
 
-// https://immense-woodland-13360.herokuapp.com
-
 a.interceptors.request.use(function (config) {
-  const token = localStorage.getItem('SOCIO_TOKEN');
-  config.headers.Authorization = 'Bearer ' + token;
+  const token = localStorage.getItem("SOCIO_TOKEN");
+  config.headers.Authorization = "Bearer " + token;
   return config;
 });
 
